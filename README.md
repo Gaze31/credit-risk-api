@@ -1,181 +1,138 @@
-# Credit Risk Scoring API
+# Credit Risk Scoring API & Dashboard
 
-Production ML system for loan default prediction. Gradient Boosting classifier trained on Lending Club data with a React dashboard and FastAPI backend deployed on Vercel.
+> ML-powered loan default prediction. A Gradient Boosting model trained on Lending Club data, served through a FastAPI backend and a React dashboard — deployed as a single app on Vercel.
 
-## Live Demo
+**🔗 Live demo:** _add your Vercel URL here after deploying_ · **📊 Interactive API docs:** `/api/docs`
 
-**Dashboard:** [your-app.vercel.app](https://your-app.vercel.app)  
-**API Docs:** [your-app.vercel.app/api/docs](https://your-app.vercel.app/api/docs)
+![Python](https://img.shields.io/badge/Python-3.10-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-009688?logo=fastapi&logoColor=white)
+![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)
+![scikit-learn](https://img.shields.io/badge/scikit--learn-GradientBoosting-F7931E?logo=scikitlearn&logoColor=white)
+![License](https://img.shields.io/badge/license-MIT-green)
+
+---
+
+## What it does
+
+Given ten features from a loan application (amount, interest rate, income, debt-to-income, credit history, etc.), the model returns a **calibrated probability of default**, maps it to a **risk tier** (LOW → CRITICAL), a **300–850 credit score**, a **lending recommendation**, and the **top feature importances** behind the decision. The dashboard lets you score applications interactively, replay history, and inspect model performance.
+
+## Screenshots
+
+_Add 2–3 screenshots here: the Risk Scorer tab, a result card, and the Model Performance tab. A recruiter decides in 5 seconds — show, don't tell._
+
+---
+
+## Model card
+
+Honesty about a model's limits is a feature, not a weakness. Here is exactly how this model performs.
+
+| Metric | Value | Reading |
+|---|---|---|
+| **AUC-ROC (test)** | **0.770** | Solid discrimination for consumer credit risk. |
+| **AUC-ROC (5-fold CV)** | **0.777 ± 0.004** | Tiny variance → the model is stable and not overfit. |
+| **Recall** | **0.703** | Catches ~70% of true defaulters. |
+| **Precision** | **0.461** | Of applicants it flags, ~46% actually default. |
+| **F1** | **0.557** | Balance of the two. |
+
+**Data:** Lending Club loans. Train 26,059 / Test 6,515. Base default rate **27.3%** (imbalanced — worth stating).
+
+**Confusion matrix (test set):**
+
+|  | Predicted good | Predicted default |
+|---|---|---|
+| **Actually good** | TN 3,280 | FP 1,459 |
+| **Actually default** | FN 527 | TP 1,249 |
+
+**The deliberate tradeoff:** this model is tuned to favor **recall over precision**. In lending, a missed defaulter (false negative) costs the whole loan, while a wrongly-flagged good borrower (false positive) just goes to manual review. Catching 70% of defaulters at the cost of some false alarms is the economically correct bias — and it's a choice, not an accident.
+
+**What drives predictions (feature importance):**
+
+1. Annual income — 40%
+2. Interest rate — 31%
+3. Debt-to-income ratio — 14%
+4. Revolving utilization — 4%
+5. (remaining six features share ~11%)
+
+**Limitations (read before trusting it):**
+
+- Trained on historical Lending Club data; it inherits any bias in that data and is **not** validated for real lending decisions.
+- Not a regulated credit-scoring system. It performs **no** FCRA/ECOA compliance, adverse-action handling, or fair-lending testing. It is a portfolio/educational demo, not a production underwriting tool.
+- Only ten features — real underwriting uses hundreds.
+
+---
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────┐
-│                  Vercel Edge                     │
-│                                                  │
-│   React + Tailwind ──→ /api/predict ──→ Model   │
-│   (Static Build)       (Python Serverless)       │
-│                                                  │
-│   Scaler: JSON params (no sklearn at runtime)    │
-│   Model: Pickle + optional ONNX export           │
-└─────────────────────────────────────────────────┘
+credit-risk-api/
+├── api/index.py          # FastAPI inference service  → /api/*
+├── model/                # Pickled GBM + JSON scaler & metrics (~455 KB)
+├── training/train_model.py
+├── src/                  # React + Vite dashboard (Tailwind, Recharts, lucide)
+│   └── components/        # LoanForm, RiskResult, PredictionHistory, ModelMetrics, Header
+├── tests/                # pytest: API + training
+└── vercel.json           # One deploy: Python serverless + static frontend, same origin
 ```
 
-## Model Performance
+**Why one origin:** `vercel.json` builds the Python API and the static React app together, so the frontend calls `/api/*` on its own domain — no CORS gymnastics, no second deployment to babysit.
 
-| Metric | Value |
-|--------|-------|
-| AUC-ROC | See `model/metrics.json` |
-| Precision | See `model/metrics.json` |
-| Recall | See `model/metrics.json` |
-| F1 Score | See `model/metrics.json` |
-| Cross-Val AUC | 5-fold with std |
-| Training Data | Lending Club loan records |
+## API reference
 
-> **Note:** Metrics above are from synthetic data used for CI. Train on [Lending Club data](https://www.kaggle.com/datasets/wordsforthewise/lending-club) for production metrics.
+| Method | Route | Purpose |
+|---|---|---|
+| `POST` | `/api/predict` | Score a loan application → probability, tier, score, recommendation, feature importances. |
+| `GET` | `/api/health` | Model status + version. |
+| `GET` | `/api/model-info` | Metrics, confusion matrix, feature importances. |
+| `GET` | `/api/sample` | Sample low/moderate/high-risk applications for testing. |
+| `GET` | `/api/docs` | Interactive Swagger UI. |
 
-## API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/predict` | Predict default probability for a loan application |
-| `GET` | `/api/health` | Health check and model status |
-| `GET` | `/api/model-info` | Model metadata, metrics, and feature importances |
-| `GET` | `/api/sample` | Sample loan applications for testing |
-| `GET` | `/api/docs` | Interactive Swagger documentation |
-
-### Prediction Request
-
-```json
-{
-  "loan_amnt": 15000,
-  "int_rate": 12.5,
-  "annual_inc": 60000,
-  "dti": 18.5,
-  "delinq_2yrs": 0,
-  "inq_last_6mths": 1,
-  "open_acc": 8,
-  "revol_util": 45.0,
-  "total_acc": 15,
-  "emp_length": 3
-}
-```
-
-### Prediction Response
-
-```json
-{
-  "default_probability": 0.1823,
-  "risk_tier": "MODERATE",
-  "risk_score": 685,
-  "recommendation": "Approve — review pricing",
-  "confidence": "High",
-  "feature_importance": {
-    "int_rate": 0.2847,
-    "dti": 0.1923,
-    "revol_util": 0.1456,
-    "annual_inc": 0.1203,
-    "delinq_2yrs": 0.0891
-  },
-  "input_summary": {
-    "loan_amount": 15000,
-    "interest_rate": 12.5,
-    "annual_income": 60000,
-    "dti_ratio": 18.5
-  }
-}
-```
-
-## Quick Start
-
-### Prerequisites
-
-- Python 3.10+
-- Node.js 18+
-
-### Setup
+Example:
 
 ```bash
-# Clone
-git clone https://github.com/Gaze31/credit-risk-api.git
-cd credit-risk-api
+curl -X POST https://<your-app>.vercel.app/api/predict \
+  -H "Content-Type: application/json" \
+  -d '{"loan_amnt":20000,"int_rate":15,"annual_inc":55000,"dti":22,
+       "delinq_2yrs":1,"inq_last_6mths":2,"open_acc":8,"revol_util":55,
+       "total_acc":15,"emp_length":3}'
+```
 
-# Install Python dependencies
-pip install -r requirements-dev.txt
+## Run locally
 
-# Train model (synthetic data for development)
-python training/train_model.py --synthetic
-
-# Train model (real Lending Club data)
-# Download from: https://www.kaggle.com/datasets/wordsforthewise/lending-club
-python training/train_model.py --data training/data/accepted_2007_to_2018Q4.csv
-
-# Start API
+```bash
+# Backend (terminal 1)
+pip install -r requirements.txt
 uvicorn api.index:app --reload --port 8000
 
-# Install frontend dependencies
+# Frontend (terminal 2)
 npm install
-
-# Start frontend dev server
-npm run dev
+npm run dev          # http://localhost:5173, proxies /api → localhost:8000
 ```
 
-### Run Tests
+## Tests
 
 ```bash
-pytest tests/ -v
+pip install -r requirements-dev.txt
+pytest
 ```
 
-## Deployment (Vercel)
+## Deploy (Vercel — one project, free tier)
 
-1. Push to GitHub
-2. Import repo in [Vercel](https://vercel.com)
-3. Deploy — Vercel auto-detects the config from `vercel.json`
+1. Push to GitHub (already done).
+2. vercel.com → **Add New → Project** → import this repo.
+3. Vercel auto-detects `vercel.json` (Python serverless + static build). Framework preset: **Other**. No env vars needed — frontend and API share one origin.
+4. **Deploy.** Your app is live at `https://<project>.vercel.app`, docs at `/api/docs`.
 
-The frontend builds as static files. The API runs as a Python serverless function. Scaler parameters are stored as JSON so no scikit-learn is needed at inference time for scaling — only for the model pickle.
+Total footprint is ~1.4 MB and well under Vercel's free-tier limits (100 GB bandwidth/month, 250 MB function size). Unlike Render's free tier, Vercel serverless doesn't cold-sleep, so the demo loads instantly for anyone who opens it.
 
-## Tech Stack
+---
 
-**Backend:** Python, FastAPI, scikit-learn, Gradient Boosting, Pydantic, NumPy  
-**Frontend:** React 18, Tailwind CSS, Recharts, Lucide Icons, Vite  
-**Deployment:** Vercel (static + serverless), GitHub Actions CI  
-**ML Pipeline:** StandardScaler (JSON export), cross-validation, calibration analysis
+## Tech stack
 
-## Project Structure
-
-```
-credit-risk-api/
-├── api/
-│   └── index.py              # FastAPI serverless endpoint
-├── src/
-│   ├── components/
-│   │   ├── Header.jsx         # App header with health status
-│   │   ├── LoanForm.jsx       # Loan application input form
-│   │   ├── RiskResult.jsx     # Risk assessment results + charts
-│   │   ├── PredictionHistory.jsx  # Prediction log table
-│   │   └── ModelMetrics.jsx   # Model performance dashboard
-│   ├── App.jsx                # Main application
-│   ├── main.jsx               # Entry point
-│   └── index.css              # Tailwind imports
-├── training/
-│   └── train_model.py         # Training pipeline (LC data + synthetic)
-├── model/                     # Trained model artifacts
-│   ├── credit_model.pkl       # Gradient Boosting model
-│   ├── scaler.json            # StandardScaler params (JSON)
-│   ├── features.json          # Feature list
-│   ├── metrics.json           # Evaluation metrics
-│   └── metadata.json          # Model metadata
-├── tests/
-│   ├── test_api.py            # 21 API tests
-│   └── test_training.py       # 10 training pipeline tests
-├── .github/workflows/
-│   └── ci.yml                 # GitHub Actions CI
-├── vercel.json                # Vercel deployment config
-├── requirements.txt           # Production dependencies
-├── requirements-dev.txt       # Development dependencies
-└── package.json               # Frontend dependencies
-```
+**ML:** scikit-learn (GradientBoostingClassifier · 200 trees · depth 4 · lr 0.05), NumPy
+**Backend:** FastAPI, Pydantic, Uvicorn
+**Frontend:** React 18, Vite, Tailwind CSS, Recharts, lucide-react
+**Deploy:** Vercel (serverless Python + static)
 
 ## License
 
-MIT
+MIT — built by Sumedha Hundekar. [GitHub](https://github.com/Gaze31/credit-risk-api)
