@@ -1,0 +1,12 @@
+[
+  "loan_amnt",
+  "int_rate",
+  "annual_inc",
+  "dti",
+  "delinq_2yrs",
+  "inq_last_6mths",
+  "open_acc",
+  "revol_util",
+  "total_acc",
+  "emp_length"
+]

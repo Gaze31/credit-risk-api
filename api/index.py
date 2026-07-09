@@ -17,7 +17,7 @@ from pydantic import BaseModel, Field
 
 # ── Paths ──────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).resolve().parent.parent
-MODEL_DIR = BASE_DIR / "model"
+MODEL_DIR = next((p for p in [Path(__file__).resolve().parent / "model", BASE_DIR / "model"] if (p / "credit_model.pkl").exists()), Path(__file__).resolve().parent / "model")
 
 # ── Load Artifacts ─────────────────────────────────────────────────────
 try:
