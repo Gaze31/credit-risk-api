@@ -38,19 +38,19 @@ export default function LoanForm({ onSubmit, loading }) {
   const handlePreset = (preset) => setFormData(PRESETS[preset])
 
   return (
-    <form onSubmit={handleSubmit} className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-semibold text-white">Loan Application</h2>
+    <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
+        <h2 className="text-lg font-semibold text-slate-900">Loan Application</h2>
         <div className="flex gap-2">
           {Object.keys(PRESETS).map(p => (
             <button
               key={p}
               type="button"
               onClick={() => handlePreset(p)}
-              className={`px-3 py-1 text-xs rounded-full border transition-colors ${
-                p === 'low' ? 'border-emerald-700 text-emerald-400 hover:bg-emerald-900/30' :
-                p === 'moderate' ? 'border-amber-700 text-amber-400 hover:bg-amber-900/30' :
-                'border-red-700 text-red-400 hover:bg-red-900/30'
+              className={`px-3 py-1 text-xs font-medium rounded-full border transition-colors capitalize ${
+                p === 'low' ? 'border-emerald-300 text-emerald-700 bg-emerald-50 hover:bg-emerald-100' :
+                p === 'moderate' ? 'border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100' :
+                'border-red-300 text-red-700 bg-red-50 hover:bg-red-100'
               }`}
             >
               {p} risk
@@ -62,7 +62,7 @@ export default function LoanForm({ onSubmit, loading }) {
       <div className="grid grid-cols-2 gap-4">
         {FIELD_CONFIG.map(field => (
           <div key={field.key}>
-            <label className="block text-xs font-medium text-gray-400 mb-1">
+            <label className="block text-xs font-medium text-slate-600 mb-1">
               {field.label}
             </label>
             <input
@@ -72,9 +72,9 @@ export default function LoanForm({ onSubmit, loading }) {
               step={field.step}
               value={formData[field.key]}
               onChange={e => handleChange(field.key, e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
+              className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
             />
-            <p className="text-xs text-gray-600 mt-0.5">{field.description}</p>
+            <p className="text-xs text-slate-400 mt-0.5">{field.description}</p>
           </div>
         ))}
       </div>
@@ -83,7 +83,7 @@ export default function LoanForm({ onSubmit, loading }) {
         <button
           type="submit"
           disabled={loading}
-          className="flex-1 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-800 disabled:cursor-not-allowed text-white font-medium py-2.5 px-4 rounded-lg transition-colors"
+          className="flex-1 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-300 disabled:cursor-not-allowed text-white font-medium py-2.5 px-4 rounded-lg transition-colors shadow-sm"
         >
           {loading ? (
             <><Loader2 size={16} className="animate-spin" /> Analyzing...</>
@@ -94,7 +94,7 @@ export default function LoanForm({ onSubmit, loading }) {
         <button
           type="button"
           onClick={handleReset}
-          className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-gray-300 py-2.5 px-4 rounded-lg transition-colors"
+          className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 py-2.5 px-4 rounded-lg transition-colors"
         >
           <RotateCcw size={16} /> Reset
         </button>

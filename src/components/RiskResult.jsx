@@ -2,11 +2,11 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 
 import { AlertTriangle, CheckCircle, XCircle, AlertCircle, ShieldAlert } from 'lucide-react'
 
 const TIER_CONFIG = {
-  LOW: { color: '#10b981', bg: 'bg-emerald-900/20', border: 'border-emerald-700', icon: CheckCircle },
-  MODERATE: { color: '#f59e0b', bg: 'bg-amber-900/20', border: 'border-amber-700', icon: AlertCircle },
-  HIGH: { color: '#ef4444', bg: 'bg-red-900/20', border: 'border-red-700', icon: AlertTriangle },
-  'VERY HIGH': { color: '#dc2626', bg: 'bg-red-900/30', border: 'border-red-600', icon: XCircle },
-  CRITICAL: { color: '#7f1d1d', bg: 'bg-red-950/40', border: 'border-red-800', icon: ShieldAlert },
+  LOW: { color: '#059669', bg: 'bg-emerald-50', border: 'border-emerald-200', icon: CheckCircle },
+  MODERATE: { color: '#d97706', bg: 'bg-amber-50', border: 'border-amber-200', icon: AlertCircle },
+  HIGH: { color: '#dc2626', bg: 'bg-red-50', border: 'border-red-200', icon: AlertTriangle },
+  'VERY HIGH': { color: '#b91c1c', bg: 'bg-red-50', border: 'border-red-300', icon: XCircle },
+  CRITICAL: { color: '#991b1b', bg: 'bg-red-100', border: 'border-red-300', icon: ShieldAlert },
 }
 
 export default function RiskResult({ data }) {
@@ -25,7 +25,7 @@ export default function RiskResult({ data }) {
   return (
     <div className="space-y-4">
       {/* Risk Tier Banner */}
-      <div className={`${tier.bg} border ${tier.border} rounded-xl p-5`}>
+      <div className={`${tier.bg} border ${tier.border} rounded-2xl p-5 shadow-sm`}>
         <div className="flex items-start gap-4">
           <TierIcon size={32} style={{ color: tier.color }} className="mt-1 flex-shrink-0" />
           <div className="flex-1">
@@ -33,26 +33,26 @@ export default function RiskResult({ data }) {
               <span className="text-2xl font-bold" style={{ color: tier.color }}>
                 {data.risk_tier}
               </span>
-              <span className="text-sm text-gray-400">risk</span>
+              <span className="text-sm text-slate-500">risk</span>
             </div>
-            <p className="text-gray-300 text-sm">{data.recommendation}</p>
-            <p className="text-gray-500 text-xs mt-1">Confidence: {data.confidence}</p>
+            <p className="text-slate-700 text-sm">{data.recommendation}</p>
+            <p className="text-slate-500 text-xs mt-1">Confidence: {data.confidence}</p>
           </div>
         </div>
       </div>
 
       {/* Score Cards */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 text-center">
-          <p className="text-xs text-gray-500 mb-1">Default Probability</p>
+        <div className="bg-white border border-slate-200 rounded-xl p-4 text-center shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">Default Probability</p>
           <p className="text-2xl font-bold" style={{ color: tier.color }}>
             {(data.default_probability * 100).toFixed(1)}%
           </p>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 text-center">
-          <p className="text-xs text-gray-500 mb-1">Credit Score</p>
-          <p className="text-2xl font-bold text-white">{data.risk_score}</p>
-          <div className="w-full bg-gray-800 rounded-full h-1.5 mt-2">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 text-center shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">Credit Score</p>
+          <p className="text-2xl font-bold text-slate-900">{data.risk_score}</p>
+          <div className="w-full bg-slate-100 rounded-full h-1.5 mt-2">
             <div
               className="h-1.5 rounded-full transition-all duration-500"
               style={{
@@ -62,8 +62,8 @@ export default function RiskResult({ data }) {
             />
           </div>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 text-center">
-          <p className="text-xs text-gray-500 mb-1">Risk Tier</p>
+        <div className="bg-white border border-slate-200 rounded-xl p-4 text-center shadow-sm">
+          <p className="text-xs text-slate-500 mb-1">Risk Tier</p>
           <p className="text-2xl font-bold" style={{ color: tier.color }}>
             {data.risk_tier.charAt(0)}
           </p>
@@ -71,20 +71,20 @@ export default function RiskResult({ data }) {
       </div>
 
       {/* Feature Importance Chart */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-        <h3 className="text-sm font-medium text-gray-300 mb-4">Top Risk Drivers</h3>
+      <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+        <h3 className="text-sm font-semibold text-slate-700 mb-4">Top Risk Drivers</h3>
         <ResponsiveContainer width="100%" height={180}>
           <BarChart data={chartData} layout="vertical" margin={{ left: 80, right: 20 }}>
-            <XAxis type="number" tick={{ fill: '#6b7280', fontSize: 11 }} tickFormatter={v => `${v}%`} />
-            <YAxis type="category" dataKey="name" tick={{ fill: '#9ca3af', fontSize: 12 }} width={75} />
+            <XAxis type="number" tick={{ fill: '#64748b', fontSize: 11 }} tickFormatter={v => `${v}%`} />
+            <YAxis type="category" dataKey="name" tick={{ fill: '#475569', fontSize: 12 }} width={75} />
             <Tooltip
-              contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: '8px' }}
-              labelStyle={{ color: '#e5e7eb' }}
+              contentStyle={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
+              labelStyle={{ color: '#0f172a' }}
               formatter={v => [`${v}%`, 'Importance']}
             />
             <Bar dataKey="importance" radius={[0, 4, 4, 0]}>
               {chartData.map((_, i) => (
-                <Cell key={i} fill={i === 0 ? tier.color : '#4b5563'} />
+                <Cell key={i} fill={i === 0 ? tier.color : '#cbd5e1'} />
               ))}
             </Bar>
           </BarChart>
@@ -93,13 +93,13 @@ export default function RiskResult({ data }) {
 
       {/* Input Summary */}
       {data.input_summary && (
-        <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-4">
-          <h3 className="text-xs font-medium text-gray-500 mb-2">Input Summary</h3>
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+          <h3 className="text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wider">Input Summary</h3>
           <div className="grid grid-cols-2 gap-2 text-sm">
             {Object.entries(data.input_summary).map(([key, val]) => (
               <div key={key} className="flex justify-between">
-                <span className="text-gray-500">{key.replace(/_/g, ' ')}</span>
-                <span className="text-gray-300 font-mono">
+                <span className="text-slate-500">{key.replace(/_/g, ' ')}</span>
+                <span className="text-slate-800 font-mono">
                   {typeof val === 'number' && key.includes('income') ? `$${val.toLocaleString()}` :
                    typeof val === 'number' && key.includes('amount') ? `$${val.toLocaleString()}` :
                    typeof val === 'number' && key.includes('rate') ? `${val}%` :

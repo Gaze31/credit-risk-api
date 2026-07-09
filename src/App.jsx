@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Activity, Shield, BarChart3, Info } from 'lucide-react'
+import { Activity, Shield, BarChart3, Info, Cpu, Database, GitBranch } from 'lucide-react'
 import LoanForm from './components/LoanForm'
 import RiskResult from './components/RiskResult'
 import PredictionHistory from './components/PredictionHistory'
@@ -11,6 +11,12 @@ const TABS = [
   { id: 'history', label: 'History', icon: Activity },
   { id: 'model', label: 'Model Performance', icon: BarChart3 },
   { id: 'about', label: 'API Info', icon: Info },
+]
+
+const HIGHLIGHTS = [
+  { icon: Cpu, title: 'Gradient Boosting', text: 'Ensemble model with 5-fold cross-validation for stable, reliable predictions.' },
+  { icon: Database, title: 'Real Lending Data', text: 'Trained on Lending Club loan records with real-world default outcomes.' },
+  { icon: GitBranch, title: 'Production API', text: 'FastAPI backend with health checks, Swagger docs, and full test coverage.' },
 ]
 
 export default function App() {
@@ -64,12 +70,43 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950">
+    <div className="min-h-screen bg-slate-50 flex flex-col">
       <Header health={apiHealth} />
 
+      {/* Hero */}
+      {activeTab === 'predict' && !result && (
+        <section className="bg-gradient-to-b from-emerald-50/70 to-slate-50 border-b border-slate-200">
+          <div className="max-w-screen-2xl mx-auto px-4 sm:px-8 py-10 lg:py-14">
+            <div className="max-w-3xl">
+              <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 tracking-tight leading-tight">
+                Instant loan default risk assessment,{' '}
+                <span className="text-emerald-600">powered by machine learning</span>
+              </h2>
+              <p className="mt-4 text-lg text-slate-600">
+                Enter a borrower profile and get a default probability, credit score estimate,
+                risk tier, and the exact factors driving the decision — in under a second.
+              </p>
+            </div>
+            <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
+              {HIGHLIGHTS.map(({ icon: Icon, title, text }) => (
+                <div key={title} className="flex items-start gap-3 bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                  <div className="p-2 bg-emerald-50 rounded-lg shrink-0">
+                    <Icon size={18} className="text-emerald-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-slate-900 text-sm">{title}</p>
+                    <p className="text-sm text-slate-500 mt-0.5">{text}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Tab Navigation */}
-      <nav className="border-b border-gray-800 bg-gray-900/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+      <nav className="border-b border-slate-200 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-8">
           <div className="flex gap-1 overflow-x-auto">
             {TABS.map(tab => {
               const Icon = tab.icon
@@ -79,8 +116,8 @@ export default function App() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                     activeTab === tab.id
-                      ? 'border-emerald-500 text-emerald-400'
-                      : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-600'
+                      ? 'border-emerald-600 text-emerald-700'
+                      : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300'
                   }`}
                 >
                   <Icon size={16} />
@@ -93,22 +130,25 @@ export default function App() {
       </nav>
 
       {/* Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+      <main className="max-w-screen-2xl mx-auto px-4 sm:px-8 py-8 w-full flex-1">
         {activeTab === 'predict' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <LoanForm onSubmit={handlePredict} loading={loading} />
-            <div>
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+            <div className="lg:col-span-2">
+              <LoanForm onSubmit={handlePredict} loading={loading} />
+            </div>
+            <div className="lg:col-span-3">
               {error && (
-                <div className="mb-4 p-4 bg-red-900/30 border border-red-700 rounded-lg text-red-300">
+                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
                   {error}
                 </div>
               )}
               {result && <RiskResult data={result} />}
               {!result && !error && (
-                <div className="flex items-center justify-center h-full min-h-[400px] text-gray-600">
-                  <div className="text-center">
-                    <Shield size={48} className="mx-auto mb-4 opacity-30" />
-                    <p className="text-lg">Submit a loan application to see risk assessment</p>
+                <div className="flex items-center justify-center h-full min-h-[400px] bg-white border border-dashed border-slate-300 rounded-2xl text-slate-400">
+                  <div className="text-center px-6">
+                    <Shield size={48} className="mx-auto mb-4 opacity-40" />
+                    <p className="text-lg font-medium text-slate-500">Your risk assessment will appear here</p>
+                    <p className="text-sm mt-1">Fill in the loan application or try one of the presets, then hit "Assess Risk"</p>
                   </div>
                 </div>
               )}
@@ -125,44 +165,45 @@ export default function App() {
         )}
 
         {activeTab === 'about' && (
-          <div className="max-w-2xl">
-            <h2 className="text-2xl font-bold mb-6">API Documentation</h2>
-            <div className="space-y-4">
-              <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
-                <h3 className="text-emerald-400 font-mono text-sm mb-1">POST /api/predict</h3>
-                <p className="text-gray-400 text-sm">Submit loan application for risk scoring. Returns default probability, risk tier, credit score, and feature importances.</p>
+          <div className="max-w-4xl">
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">API Documentation</h2>
+            <p className="text-slate-500 mb-6">RESTful endpoints served by FastAPI. All responses are JSON.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                <h3 className="font-mono text-sm mb-1"><span className="text-white bg-emerald-600 rounded px-1.5 py-0.5 text-xs font-bold mr-2">POST</span><span className="text-slate-800">/api/predict</span></h3>
+                <p className="text-slate-500 text-sm mt-2">Submit loan application for risk scoring. Returns default probability, risk tier, credit score, and feature importances.</p>
               </div>
-              <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
-                <h3 className="text-emerald-400 font-mono text-sm mb-1">GET /api/health</h3>
-                <p className="text-gray-400 text-sm">Health check endpoint. Returns model status and version.</p>
+              <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                <h3 className="font-mono text-sm mb-1"><span className="text-white bg-sky-600 rounded px-1.5 py-0.5 text-xs font-bold mr-2">GET</span><span className="text-slate-800">/api/health</span></h3>
+                <p className="text-slate-500 text-sm mt-2">Health check endpoint. Returns model status and version.</p>
               </div>
-              <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
-                <h3 className="text-emerald-400 font-mono text-sm mb-1">GET /api/model-info</h3>
-                <p className="text-gray-400 text-sm">Model metadata, training metrics, feature importances, and confusion matrix.</p>
+              <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                <h3 className="font-mono text-sm mb-1"><span className="text-white bg-sky-600 rounded px-1.5 py-0.5 text-xs font-bold mr-2">GET</span><span className="text-slate-800">/api/model-info</span></h3>
+                <p className="text-slate-500 text-sm mt-2">Model metadata, training metrics, feature importances, and confusion matrix.</p>
               </div>
-              <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
-                <h3 className="text-emerald-400 font-mono text-sm mb-1">GET /api/sample</h3>
-                <p className="text-gray-400 text-sm">Sample loan applications (low, moderate, high risk) for testing.</p>
+              <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                <h3 className="font-mono text-sm mb-1"><span className="text-white bg-sky-600 rounded px-1.5 py-0.5 text-xs font-bold mr-2">GET</span><span className="text-slate-800">/api/sample</span></h3>
+                <p className="text-slate-500 text-sm mt-2">Sample loan applications (low, moderate, high risk) for testing.</p>
               </div>
-              <div className="mt-6 p-4 bg-gray-900 border border-gray-700 rounded-lg">
-                <p className="text-gray-400 text-sm">
-                  Full interactive docs available at{' '}
-                  <a href="/api/docs" className="text-emerald-400 hover:text-emerald-300 underline">/api/docs</a>{' '}
-                  (Swagger UI)
-                </p>
-              </div>
+            </div>
+            <div className="mt-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
+              <p className="text-slate-600 text-sm">
+                Full interactive docs available at{' '}
+                <a href="/api/docs" className="text-emerald-700 hover:text-emerald-800 font-medium underline">/api/docs</a>{' '}
+                (Swagger UI)
+              </p>
             </div>
           </div>
         )}
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-gray-800 py-6 mt-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center text-gray-600 text-sm">
+      <footer className="border-t border-slate-200 bg-white py-6 mt-12">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-8 text-center text-slate-500 text-sm">
           Credit Risk Scoring API v2.0 — Gradient Boosting on Lending Club data
           <br />
           Built by Sumedha Hundekar |{' '}
-          <a href="https://github.com/Gaze31/credit-risk-api" className="text-gray-500 hover:text-gray-300">
+          <a href="https://github.com/Gaze31/credit-risk-api" className="text-slate-500 hover:text-slate-800 underline">
             GitHub
           </a>
         </div>
