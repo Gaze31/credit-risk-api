@@ -18,7 +18,11 @@ Given ten features from a loan application (amount, interest rate, income, debt-
 
 ## Screenshots
 
-_Add 2–3 screenshots here: the Risk Scorer tab, a result card, and the Model Performance tab. A recruiter decides in 5 seconds — show, don't tell._
+<img width="1470" height="956" alt="image" src="https://github.com/user-attachments/assets/708f7473-4d99-447c-9d2a-649166ede769" />
+<img width="1470" height="956" alt="image" src="https://github.com/user-attachments/assets/a8ab3d0f-77ff-4729-83d7-6e895d83363a" />
+<img width="1470" height="956" alt="image" src="https://github.com/user-attachments/assets/95d54d5d-de87-4171-b3fd-aa7900668a3c" />
+
+
 
 ---
 
