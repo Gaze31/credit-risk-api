@@ -35,9 +35,21 @@ for est in model.estimators_[:, 0]:
         "v": [round(float(v), 10) for v in t.value[:, 0, 0].tolist()],
     })
 
+# Calibration mapping (reliability curve computed on the held-out test set).
+# Training upweights defaults via sample_weight, which inflates raw
+# probabilities; interpolating the reliability curve maps raw scores back
+# to empirical default rates. Anchored at (0,0) and (1,1).
+cal = metrics["calibration"]
+cal_x = [0.0] + list(cal["mean_predicted"]) + [1.0]
+cal_y = [0.0] + list(cal["fraction_positive"]) + [1.0]
+assert all(a < b for a, b in zip(cal_x, cal_x[1:])), "calibration x must be increasing"
+assert all(a <= b for a, b in zip(cal_y, cal_y[1:])), "calibration y must be monotone"
+
 payload = {
     "prior": prior,
     "learning_rate": float(model.learning_rate),
+    "calibration_x": [round(v, 6) for v in cal_x],
+    "calibration_y": [round(v, 6) for v in cal_y],
     "trees": trees,
     "scaler_mean": scaler["mean"],
     "scaler_scale": scaler["scale"],

@@ -48,6 +48,11 @@ export default function RiskResult({ data }) {
           <p className="text-2xl font-bold" style={{ color: tier.color }}>
             {(data.default_probability * 100).toFixed(1)}%
           </p>
+          {data.uncalibrated_probability != null && (
+            <p className="text-xs text-slate-400 mt-1">
+              calibrated · raw {(data.uncalibrated_probability * 100).toFixed(1)}%
+            </p>
+          )}
         </div>
         <div className="bg-white border border-slate-200 rounded-xl p-4 text-center shadow-sm">
           <p className="text-xs text-slate-500 mb-1">Credit Score</p>

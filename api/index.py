@@ -26,6 +26,8 @@ try:
     TREES = MODEL["trees"]
     PRIOR = MODEL["prior"]
     LEARNING_RATE = MODEL["learning_rate"]
+    CALIBRATION_X = np.array(MODEL["calibration_x"])
+    CALIBRATION_Y = np.array(MODEL["calibration_y"])
     SCALER_MEAN = np.array(MODEL["scaler_mean"])
     SCALER_SCALE = np.array(MODEL["scaler_scale"])
     FEATURES = MODEL["features"]
@@ -58,11 +60,20 @@ def _tree_predict(tree: dict, x: np.ndarray) -> float:
     return tree["v"][node]
 
 
-def predict_default_probability(raw_input: np.ndarray) -> float:
-    """StandardScaler transform + gradient boosting decision function + sigmoid."""
+def predict_default_probability(raw_input: np.ndarray) -> tuple:
+    """StandardScaler transform + gradient boosting decision function + sigmoid,
+    then probability calibration.
+
+    Training upweights the default class (sample_weight), which inflates raw
+    probabilities. We map the raw score back to an empirical default rate by
+    interpolating the reliability curve measured on the held-out test set.
+    Returns (calibrated_probability, raw_probability).
+    """
     x = (raw_input - SCALER_MEAN) / SCALER_SCALE
     raw_score = PRIOR + LEARNING_RATE * sum(_tree_predict(t, x) for t in TREES)
-    return float(1.0 / (1.0 + np.exp(-raw_score)))
+    raw_prob = float(1.0 / (1.0 + np.exp(-raw_score)))
+    calibrated = float(np.interp(raw_prob, CALIBRATION_X, CALIBRATION_Y))
+    return calibrated, raw_prob
 
 
 # ── FastAPI App ────────────────────────────────────────────────────────
@@ -89,19 +100,20 @@ app.add_middleware(
 # ── Request / Response Models ──────────────────────────────────────────
 class LoanApplication(BaseModel):
     loan_amnt: float = Field(15000, ge=500, le=40000, description="Loan amount in USD")
-    int_rate: float = Field(12.5, ge=5.0, le=31.0, description="Interest rate (%)")
-    annual_inc: float = Field(60000, ge=10000, le=500000, description="Annual income in USD")
-    dti: float = Field(18.5, ge=0, le=50, description="Debt-to-income ratio")
+    int_rate: float = Field(10.5, ge=5.0, le=31.0, description="Interest rate (%)")
+    annual_inc: float = Field(75000, ge=10000, le=500000, description="Annual income in USD")
+    dti: float = Field(15.0, ge=0, le=50, description="Debt-to-income ratio")
     delinq_2yrs: int = Field(0, ge=0, le=10, description="Delinquencies in last 2 years")
-    inq_last_6mths: int = Field(1, ge=0, le=8, description="Credit inquiries in last 6 months")
-    open_acc: int = Field(8, ge=1, le=50, description="Number of open credit lines")
-    revol_util: float = Field(45.0, ge=0, le=100, description="Revolving utilization rate (%)")
-    total_acc: int = Field(15, ge=2, le=80, description="Total credit lines")
-    emp_length: int = Field(3, ge=0, le=10, description="Employment length in years")
+    inq_last_6mths: int = Field(0, ge=0, le=8, description="Credit inquiries in last 6 months")
+    open_acc: int = Field(10, ge=1, le=50, description="Number of open credit lines")
+    revol_util: float = Field(35.0, ge=0, le=100, description="Revolving utilization rate (%)")
+    total_acc: int = Field(20, ge=2, le=80, description="Total credit lines")
+    emp_length: int = Field(5, ge=0, le=10, description="Employment length in years")
 
 
 class RiskResponse(BaseModel):
     default_probability: float
+    uncalibrated_probability: float
     risk_tier: str
     risk_score: int
     recommendation: str
@@ -190,7 +202,7 @@ def predict(loan: LoanApplication):
         loan.open_acc, loan.revol_util, loan.total_acc, loan.emp_length
     ], dtype=float)
 
-    prob = predict_default_probability(raw_input)
+    prob, raw_prob = predict_default_probability(raw_input)
     tier, recommendation, score = get_risk_tier(prob)
     confidence = get_confidence_level(prob)
 
@@ -202,6 +214,7 @@ def predict(loan: LoanApplication):
 
     return RiskResponse(
         default_probability=round(prob, 4),
+        uncalibrated_probability=round(raw_prob, 4),
         risk_tier=tier,
         risk_score=max(300, min(850, score)),
         recommendation=recommendation,
@@ -253,11 +266,11 @@ def sample_applications():
             "total_acc": 25, "emp_length": 8
         },
         "moderate_risk": {
-            "loan_amnt": 20000, "int_rate": 15.0,
-            "annual_inc": 55000, "dti": 22.0,
-            "delinq_2yrs": 1, "inq_last_6mths": 2,
-            "open_acc": 8, "revol_util": 55.0,
-            "total_acc": 15, "emp_length": 3
+            "loan_amnt": 18000, "int_rate": 12.0,
+            "annual_inc": 70000, "dti": 18.0,
+            "delinq_2yrs": 0, "inq_last_6mths": 1,
+            "open_acc": 10, "revol_util": 40.0,
+            "total_acc": 20, "emp_length": 5
         },
         "high_risk": {
             "loan_amnt": 35000, "int_rate": 26.0,

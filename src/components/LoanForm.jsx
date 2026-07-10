@@ -3,20 +3,20 @@ import { Send, RotateCcw, Loader2 } from 'lucide-react'
 
 const FIELD_CONFIG = [
   { key: 'loan_amnt', label: 'Loan Amount ($)', min: 500, max: 40000, step: 500, default: 15000, description: 'Requested loan amount' },
-  { key: 'int_rate', label: 'Interest Rate (%)', min: 5, max: 31, step: 0.25, default: 12.5, description: 'Assigned interest rate' },
-  { key: 'annual_inc', label: 'Annual Income ($)', min: 10000, max: 500000, step: 1000, default: 60000, description: 'Borrower annual income' },
-  { key: 'dti', label: 'DTI Ratio', min: 0, max: 50, step: 0.5, default: 18.5, description: 'Debt-to-income ratio' },
+  { key: 'int_rate', label: 'Interest Rate (%)', min: 5, max: 31, step: 0.25, default: 10.5, description: 'Assigned interest rate' },
+  { key: 'annual_inc', label: 'Annual Income ($)', min: 10000, max: 500000, step: 1000, default: 75000, description: 'Borrower annual income' },
+  { key: 'dti', label: 'DTI Ratio', min: 0, max: 50, step: 0.5, default: 15, description: 'Debt-to-income ratio' },
   { key: 'delinq_2yrs', label: 'Delinquencies (2yr)', min: 0, max: 10, step: 1, default: 0, description: 'Delinquencies in past 2 years' },
-  { key: 'inq_last_6mths', label: 'Recent Inquiries', min: 0, max: 8, step: 1, default: 1, description: 'Credit inquiries in 6 months' },
-  { key: 'open_acc', label: 'Open Accounts', min: 1, max: 50, step: 1, default: 8, description: 'Number of open credit lines' },
-  { key: 'revol_util', label: 'Revolving Util (%)', min: 0, max: 100, step: 1, default: 45, description: 'Credit utilization rate' },
-  { key: 'total_acc', label: 'Total Accounts', min: 2, max: 80, step: 1, default: 15, description: 'Total credit lines ever' },
-  { key: 'emp_length', label: 'Employment (years)', min: 0, max: 10, step: 1, default: 3, description: 'Years at current employer' },
+  { key: 'inq_last_6mths', label: 'Recent Inquiries', min: 0, max: 8, step: 1, default: 0, description: 'Credit inquiries in 6 months' },
+  { key: 'open_acc', label: 'Open Accounts', min: 1, max: 50, step: 1, default: 10, description: 'Number of open credit lines' },
+  { key: 'revol_util', label: 'Revolving Util (%)', min: 0, max: 100, step: 1, default: 35, description: 'Credit utilization rate' },
+  { key: 'total_acc', label: 'Total Accounts', min: 2, max: 80, step: 1, default: 20, description: 'Total credit lines ever' },
+  { key: 'emp_length', label: 'Employment (years)', min: 0, max: 10, step: 1, default: 5, description: 'Years at current employer' },
 ]
 
 const PRESETS = {
   low: { loan_amnt: 10000, int_rate: 7.5, annual_inc: 95000, dti: 8, delinq_2yrs: 0, inq_last_6mths: 0, open_acc: 12, revol_util: 18, total_acc: 25, emp_length: 8 },
-  moderate: { loan_amnt: 20000, int_rate: 15, annual_inc: 55000, dti: 22, delinq_2yrs: 1, inq_last_6mths: 2, open_acc: 8, revol_util: 55, total_acc: 15, emp_length: 3 },
+  moderate: { loan_amnt: 18000, int_rate: 12, annual_inc: 70000, dti: 18, delinq_2yrs: 0, inq_last_6mths: 1, open_acc: 10, revol_util: 40, total_acc: 20, emp_length: 5 },
   high: { loan_amnt: 35000, int_rate: 26, annual_inc: 30000, dti: 38, delinq_2yrs: 3, inq_last_6mths: 5, open_acc: 15, revol_util: 88, total_acc: 8, emp_length: 0 },
 }
 
