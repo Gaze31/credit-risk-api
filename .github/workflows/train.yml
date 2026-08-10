@@ -1,0 +1,19 @@
+name: Train and Test Model
+on:
+  push:
+    branches: [main]
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Train model with synthetic data
+        run: python training/train_model.py --synthetic
+      - name: Verify model artifacts
+        run: ls model/

@@ -15,6 +15,10 @@ import os
 import sys
 import warnings
 import pickle
+from lightgbm import LGBMClassifier
+import plotly.express as px
+import plotly.graph_objects as go
+import statsmodels.api as sm
 
 import numpy as np
 import pandas as pd
@@ -189,10 +193,61 @@ def train_and_evaluate(df: pd.DataFrame) -> dict:
     print(f"  FN={cm[1][0]:,}  TP={cm[1][1]:,}")
     print(f"\n{classification_report(y_test, y_pred, target_names=['Good', 'Default'])}")
 
+          # ── LightGBM Comparison ──────────────────────────────────────────────
+    print("\nTraining LightGBM for comparison...")
+    lgbm = LGBMClassifier(
+       n_estimators=200,
+        max_depth=4,
+        learning_rate=0.05,
+       random_state=42,
+        verbose=-1
+       )
+    lgbm.fit(X_train_sc, y_train, sample_weight=sample_weights)
+    lgbm_proba = lgbm.predict_proba(X_test_sc)[:, 1]
+    lgbm_auc = roc_auc_score(y_test, lgbm_proba)
+    lgbm_pred = lgbm.predict(X_test_sc)
+    lgbm_f1 = f1_score(y_test, lgbm_pred)
+
+    print(f"LightGBM AUC-ROC: {lgbm_auc:.4f}")
+    print(f"LightGBM F1:      {lgbm_f1:.4f}")
+    print(f"GradientBoosting AUC: {auc:.4f} (winner: {'LightGBM' if lgbm_auc > auc else 'GradientBoosting'})")
+
+     # ── Statsmodels Logistic Baseline ──────────────────────────────
+    print("\nTraining Statsmodels Logistic Regression baseline...")
+    X_train_const = sm.add_constant(X_train_sc)
+    X_test_const = sm.add_constant(X_test_sc)
+    logit_model = sm.Logit(y_train, X_train_const)
+    logit_result = logit_model.fit(disp=0)
+    logit_proba = logit_result.predict(X_test_const)
+    logit_auc = roc_auc_score(y_test, logit_proba)
+    print(f"Statsmodels Logistic AUC: {logit_auc:.4f}")
+    print(f"Winner: {'GradientBoosting' if auc > logit_auc else 'Logistic'}")
+
+    
+
     # Feature importances
     importances = dict(zip(FEATURES, model.feature_importances_.tolist()))
     importances_sorted = dict(sorted(importances.items(), key=lambda x: x[1], reverse=True))
 
+    # Feature importance chart
+    fig = px.bar(
+       x=list(importances_sorted.keys()),
+       y=list(importances_sorted.values()),
+       title="Feature Importances — Credit Risk Model",
+       labels={"x": "Feature", "y": "Importance"}
+)
+    fig.write_html("feature_importance.html")
+    print("Plotly chart saved to feature_importance.html")
+
+# Model comparison chart
+    fig2 = go.Figure(data=[
+    go.Bar(name='AUC-ROC', 
+           x=['Gradient Boosting', 'LightGBM'],
+           y=[round(auc, 4), round(lgbm_auc, 4)])
+])
+    fig2.update_layout(title="Model Comparison — AUC-ROC")
+    fig2.write_html("model_comparison.html")
+    print("Model comparison chart saved to model_comparison.html")
     # Calibration data
     fraction_pos, mean_predicted = calibration_curve(y_test, y_pred_proba, n_bins=10)
 
@@ -201,6 +256,8 @@ def train_and_evaluate(df: pd.DataFrame) -> dict:
 
     metrics = {
         "auc_roc": round(auc, 4),
+        "lgbm_auc_roc": round(lgbm_auc, 4),  # ← add this
+        "lgbm_f1": round(lgbm_f1, 4),  
         "precision": round(precision, 4),
         "recall": round(recall, 4),
         "f1_score": round(f1, 4),

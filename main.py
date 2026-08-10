@@ -18,8 +18,9 @@ with open("model/credit_model.pkl", "rb") as f:
 with open("model/scaler.pkl", "rb") as f:
     scaler = pickle.load(f)
     #in this it opens the features where the graident boosting model marksup the required features and it used to calculate the feature importanceand also to make sure the input data is in the same order
-with open("model/features.pkl", "rb") as f:
-    features = pickle.load(f)
+import json
+with open("model/features.json", "r") as f:
+    features = json.load(f)
 
 #it initializzes the Fast API 
 app = FastAPI(
