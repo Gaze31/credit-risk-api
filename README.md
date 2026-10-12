@@ -2,7 +2,7 @@
 
 > ML-powered loan default prediction. A Gradient Boosting model trained on Lending Club data, served through a FastAPI backend and a React dashboard — deployed as a single app on Vercel.
 
-**🔗 Live demo:** _add your Vercel URL here after deploying_ · **📊 Interactive API docs:** `/api/docs`
+**🔗 Live demo:(https://credit-risk-api-1eop.vercel.app) · **📊 Interactive API docs:** `/api/docs`
 
 ![Python](https://img.shields.io/badge/Python-3.10-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-009688?logo=fastapi&logoColor=white)
