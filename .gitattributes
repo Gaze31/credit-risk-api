@@ -1,0 +1,5 @@
+# Keep GitHub language stats accurate (Python project)
+reports/** linguist-generated
+feature_importance.html linguist-generated
+model_comparison.html linguist-generated
+*.html linguist-detectable=false

@@ -236,8 +236,9 @@ def train_and_evaluate(df: pd.DataFrame) -> dict:
        title="Feature Importances — Credit Risk Model",
        labels={"x": "Feature", "y": "Importance"}
 )
-    fig.write_html("feature_importance.html")
-    print("Plotly chart saved to feature_importance.html")
+    os.makedirs("reports", exist_ok=True)
+    fig.write_html("reports/feature_importance.html", include_plotlyjs="cdn")
+    print("Plotly chart saved to reports/feature_importance.html")
 
 # Model comparison chart
     fig2 = go.Figure(data=[
@@ -246,8 +247,8 @@ def train_and_evaluate(df: pd.DataFrame) -> dict:
            y=[round(auc, 4), round(lgbm_auc, 4)])
 ])
     fig2.update_layout(title="Model Comparison — AUC-ROC")
-    fig2.write_html("model_comparison.html")
-    print("Model comparison chart saved to model_comparison.html")
+    fig2.write_html("reports/model_comparison.html", include_plotlyjs="cdn")
+    print("Model comparison chart saved to reports/model_comparison.html")
     # Calibration data
     fraction_pos, mean_predicted = calibration_curve(y_test, y_pred_proba, n_bins=10)
 
