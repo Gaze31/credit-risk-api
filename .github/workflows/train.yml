@@ -12,12 +12,10 @@ jobs:
         with:
           python-version: '3.11'
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: pip install -r requirements-dev.txt lightgbm plotly statsmodels
       - name: Train model with synthetic data
         run: python training/train_model.py --synthetic
       - name: Verify model artifacts
         run: ls model/
-      - name: Install test dependencies
-        run: pip install pytest httpx
-      - name: Run tests
+      - name: Run tests (31 tests)
         run: python -m pytest -q
