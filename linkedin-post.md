@@ -10,7 +10,7 @@ Two problems taught me more than the training did:
 
 1. Pickle doesn't survive serverless. The model loaded fine locally but failed on Vercel's Python runtime. Instead of fighting version pins, I exported the trained trees to a pure-data Python module and reimplemented inference in numpy — no scikit-learn, no pickle at runtime. Verified bit-for-bit against the original model (max probability difference under 2e-11 across 500 random inputs).
 
-2. My probabilities were lying. I upweighted the default class during training to improve recall — which silently inflated every predicted probability. A typical applicant was scoring 47% default risk. The fix: calibrate raw scores back to empirical default rates using the reliability curve from the held-out test set. Same applicant now scores ~13%, which matches reality.
+2. My probabilities were lying. I upweighted the default class during training to improve recall — which silently inflated every predicted probability. A typical applicant was scoring 47% default risk. The fix: calibrate raw scores back to empirical default rates using the reliability curve from the held-out test set. Same applicant now scores ~27.9%, which matches reality.
 
 A 0.77 AUC model that outputs miscalibrated probabilities is worse than useless in credit decisions — the ranking is right but every number is wrong. Calibration is the difference between a demo and a decision tool.
 
