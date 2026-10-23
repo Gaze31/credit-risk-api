@@ -17,3 +17,7 @@ jobs:
         run: python training/train_model.py --synthetic
       - name: Verify model artifacts
         run: ls model/
+      - name: Install test dependencies
+        run: pip install pytest httpx
+      - name: Run tests
+        run: python -m pytest -q
